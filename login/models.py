@@ -2,8 +2,19 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
-    class Meta:
-        permissions = (("can_change_username", "Can change username"),)
+    ADMIN = 'admin'
+    INSTRUCTOR = 'instructor'
+    STUDENT = 'student'
+    USER_TYPES = [
+        (ADMIN, 'Admin'),
+        (INSTRUCTOR, 'Instructor'),
+        (STUDENT, 'Student'),
+    ]
+    
+    user_type = models.CharField(max_length=20, choices=USER_TYPES, default='Admin')
+
+    def __str__(self):
+        return f"{self.username} ({self.user_type})"
 
 class Instructor(models.Model):
     instructor_id = models.CharField(max_length=50, primary_key=True)

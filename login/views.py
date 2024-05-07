@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.hashers import check_password
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, authenticate
 from django.urls import reverse
 from .models import User
 from django.contrib import messages
@@ -11,14 +11,19 @@ def login_form(request):
         username = request.POST['username']
         password = request.POST['password']
 
-        try:
-            user = User.objects.get(username=username)
-            if check_password(password, user.password):
-                login(request, user)
-                return render(request, 'login_page/index.html')  # Redirect to admin homepage on successful login
-            else: 
-                return render(request, 'login_page/login_form.html', {'error': 'Invalid username or password'})
-        except User.DoesNotExist:
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            if user.user_type == User.ADMIN:
+                return redirect('admin_homepage')
+            elif user.user_type == User.INSTRUCTOR:
+                return redirect('instructor_dashboard')
+            elif user.user_type == User.STUDENT:
+                return redirect('student_dashboard')
+            else:
+                # Handle other user types if needed
+                pass
+        else:
             return render(request, 'login_page/login_form.html', {'error': 'Invalid username or password'})
     else:
         return render(request, 'login_page/login_form.html')
@@ -30,9 +35,8 @@ def logout_view(request):
 # Your other view functions remain unchanged
 
 
-
 def admin_homepage(request):
-    return render(request, 'login_page/index.html')
+    return render(request, 'login_page/admin_homepage.html')
 
 def view_students(request):
     # Add logic to fetch student data from the database
