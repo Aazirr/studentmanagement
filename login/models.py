@@ -17,6 +17,7 @@ class User(AbstractUser):
         return f"{self.username} ({self.user_type})"
 
 class Instructor(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
     instructor_id = models.CharField(max_length=50, primary_key=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100)
@@ -48,6 +49,7 @@ class Enrollment(models.Model):
     enrollment_id = models.AutoField(primary_key=True)
     student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
     course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
+    instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, null=True)
     enrollment_date = models.DateField()
 
 

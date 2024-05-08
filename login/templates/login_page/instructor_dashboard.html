@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instructor Dashboard</title>
+</head>
+<body>
+    <h1>Welcome, {{ request.user.username }}</h1>
+    <h2>Your Classes</h2>
+    <ul>
+        {% for enrollment in classes_taught %}
+        <li>{{ enrollment.course.course_name }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

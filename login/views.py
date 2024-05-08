@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth import login, logout, authenticate
-from django.urls import reverse
-from .models import User
+from django.urls import NoReverseMatch
 from django.contrib import messages
-from .models import Instructor, Course, Student, Grade, Enrollment
+from .models import Instructor, Course, Student, Grade, Enrollment, User
+from .forms import RegistrationForm
 
 def login_form(request):
     if request.method == 'POST':
@@ -24,8 +24,10 @@ def login_form(request):
                 # Handle other user types if needed
                 pass
         else:
+            print("error1")
             return render(request, 'login_page/login_form.html', {'error': 'Invalid username or password'})
     else:
+        print("error2")
         return render(request, 'login_page/login_form.html')
 
 def logout_view(request):
@@ -170,3 +172,54 @@ def delete_course(request, course_id):
     course = get_object_or_404(Course, course_id=course_id)
     course.delete()
     return redirect('view_courses')
+
+def instructor_dashboard(request):
+    instructor = request.user.instructor
+
+    classes_taught = Enrollment.objects.filter(course__instructor=instructor)
+
+    return render(request, 'instructor_dashboard.html', {'classes_taught': classes_taught})
+
+def student_dashboard(request):
+    # Assuming you have a logged-in user object available in the request
+    # Retrieve the logged-in student based on the user object
+    student = request.user.student
+    
+    # Fetch all enrollments for the logged-in student
+    enrollments = Enrollment.objects.filter(student_id=student)
+    
+    # Create an empty list to store course information for the student
+    courses_info = []
+    
+    # Iterate through the enrollments and retrieve course information
+    for enrollment in enrollments:
+        course = enrollment.course_id
+        grade = Grade.objects.filter(enrollment=enrollment).first()
+        courses_info.append({
+            'course_name': course.course_name,
+            'instructor': course.instructor,
+            'credit_hours': course.credit_hours,
+            'grade': grade.grade_value if grade else None  # Display grade if available
+        })
+    
+    # Pass the courses information to the template for rendering
+    return render(request, 'login_page/student_dashboard.html', {'courses_info': courses_info})
+
+def register(request):
+    if request.method == 'POST':
+        form = RegistrationForm(request.POST)
+        print("check 1")
+        if form.is_valid():
+            print("check 2")
+            user = form.save(commit=False)
+            user.user_type = 'admin'  # Set default user type
+            user.save()
+            return redirect('login_form')  # Redirect to login page after successful registration
+        else:
+            print(form.errors)
+    else:
+        form = RegistrationForm()
+        print("check 3")
+    return render(request, 'login_page/register.html', {'form': form})
+
+# W7+1k9Gm1}2< password for ins123
