@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required
 from django.urls import NoReverseMatch
 from django.contrib import messages
 from .models import Instructor, Course, Student, Grade, Enrollment, User
@@ -167,6 +168,10 @@ def edit_course(request, course_id):
         }
         return render(request, 'login_page/edit_course.html', context)
 
+def view_class(request, course_id):
+    enrollments = Enrollment.objects.filter(course_id=course_id)
+
+    return render(request, 'login_page/view_class.html', {'enrollments': enrollments})
 
 def delete_course(request, course_id):
     course = get_object_or_404(Course, course_id=course_id)
@@ -176,9 +181,9 @@ def delete_course(request, course_id):
 def instructor_dashboard(request):
     instructor = request.user.instructor
 
-    classes_taught = Enrollment.objects.filter(course__instructor=instructor)
+    classes_taught = Enrollment.objects.filter(instructor=instructor)
 
-    return render(request, 'instructor_dashboard.html', {'classes_taught': classes_taught})
+    return render(request, 'login_page/instructor_dashboard.html', {'classes_taught': classes_taught})
 
 def student_dashboard(request):
     # Assuming you have a logged-in user object available in the request
@@ -208,7 +213,6 @@ def student_dashboard(request):
 def register(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
-        print("check 1")
         if form.is_valid():
             print("check 2")
             user = form.save(commit=False)
