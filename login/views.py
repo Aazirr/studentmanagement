@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.urls import NoReverseMatch
 from django.contrib import messages
 from .models import Instructor, Course, Student, Grade, Enrollment, User
-from .forms import RegistrationForm
+from .forms import RegistrationForm, InstructorForm
 
 def login_form(request):
     if request.method == 'POST':
@@ -66,33 +66,27 @@ def view_enrollments(request):
 
 def add_instructors(request):
     if request.method == 'POST':
-        instructor_id = request.POST['instructor_id']
-        first_name = request.POST['first_name']
-        last_name = request.POST['last_name']
-        email = request.POST['email']
-        phone_number = request.POST['phone_number']
-        
-        # Check if an instructor with the same ID already exists
-        if Instructor.objects.filter(instructor_id=instructor_id).exists():
-            # If the instructor_id already exists, set error flag to True
-            return render(request, 'login_page/add_instructors.html', {'error': True})
-            
-        # Create new Instructor object
-        new_instructor = Instructor(
-            instructor_id=instructor_id,
-            first_name=first_name,
-            last_name=last_name,
-            email=email,
-            phone_number=phone_number
-        )
-        
-        # Save the new instructor to the database
-        new_instructor.save()
-        
-        # Redirect to the view_instructors page
-        return redirect('view_instructors')
+        form = InstructorForm(request.POST)
+        if form.is_valid():
+            # Create a new User instance
+            user = User.objects.create_user(
+                username=form.cleaned_data['username'],
+                password=form.cleaned_data['password'],
+                user_type=User.INSTRUCTOR
+            )
+            # Create a new Instructor instance associated with the new User instance
+            Instructor.objects.create(
+                user=user,
+                instructor_id=form.cleaned_data['instructor_id'],
+                first_name=form.cleaned_data['first_name'],
+                last_name=form.cleaned_data['last_name'],
+                email=form.cleaned_data['email'],
+                phone_number=form.cleaned_data['phone_number']
+            )
+            return redirect('view_instructors')
     else:
-        return render(request, 'login_page/add_instructors.html', {'error': False})
+        form = InstructorForm()
+    return render(request, 'login_page/add_instructors.html', {'form': form})
 
 def edit_instructor(request, instructor_id):
     # Get the instructor object from the database

@@ -87,6 +87,10 @@
     <form method="post">
         {% csrf_token %}
         <h1>Add Instructor</h1>
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
         <label for="instructor_id">Instructor ID:</label>
         <input type="text" id="instructor_id" name="instructor_id" required>
         <label for="first_name">First Name:</label>
