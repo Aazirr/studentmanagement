@@ -55,32 +55,37 @@ class Semester(models.Model):
 class Course(models.Model):
     course_id = models.CharField(max_length=50, primary_key=True)
     course_name = models.CharField(max_length=100)
-    instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE)
     credit_hours = models.IntegerField()
-    school_year = models.ForeignKey(SchoolYear, on_delete=models.CASCADE)
-    semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.course_name
 
-class Enrollment(models.Model):
-    enrollment_id = models.AutoField(primary_key=True)
-    student_id = models.ForeignKey(Student, on_delete=models.CASCADE)
-    course_id = models.ForeignKey(Course, on_delete=models.CASCADE)
-    instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE, null=True)
+
+class Class(models.Model):
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    instructor = models.ForeignKey(Instructor, on_delete=models.CASCADE)
     school_year = models.ForeignKey(SchoolYear, on_delete=models.CASCADE)
     semester = models.ForeignKey(Semester, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ['course', 'instructor', 'school_year', 'semester']
+
+    def __str__(self):
+        return f"{self.course.course_name} - {self.instructor.user.username}"
+
+class Enrollment(models.Model):
+    enrollment_id = models.AutoField(primary_key=True)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    enrolled_class = models.ForeignKey(Class, on_delete=models.CASCADE)
     enrollment_date = models.DateField()
+    midterm_grade = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
+    final_grade = models.DecimalField(max_digits=5, decimal_places=2, default=0.00)
 
     class Meta:
-        unique_together = ['student_id', 'course_id', 'school_year', 'semester']
+        unique_together = ['student', 'enrolled_class']
 
+    def __str__(self):
+        return f"{self.student.first_name} - {self.enrolled_class.course.course_name}"
 
-class Grade(models.Model):
-    enrollment = models.ForeignKey(Enrollment, on_delete=models.CASCADE, primary_key=True)
-    grade_value = models.CharField(max_length=50)
-
-    class Meta:
-        unique_together = ['enrollment', 'grade_value']
 
 

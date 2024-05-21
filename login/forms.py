@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import User, Instructor
+from .models import User, Instructor, Enrollment
 
 class RegistrationForm(UserCreationForm):
     email = forms.EmailField()
@@ -16,3 +16,8 @@ class InstructorForm(forms.ModelForm):
     class Meta:
         model = Instructor
         fields = ['username', 'password', 'instructor_id', 'first_name', 'last_name', 'email', 'phone_number']
+
+class GradeForm(forms.ModelForm):
+    class Meta:
+        model = Enrollment
+        fields = ['midterm_grade', 'final_grade']

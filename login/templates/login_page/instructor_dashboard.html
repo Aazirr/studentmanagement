@@ -6,43 +6,32 @@
     <title>Instructor Dashboard</title>
     <style>
         body {
+            background-color: white;
             font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            margin: 0;
-            padding: 0;
+        }
+        h1, h2 {
+            color: #3498db;
         }
         .container {
-            max-width: 800px;
+            width: 80%;
             margin: 0 auto;
-            padding: 20px;
-            background-color: #fff;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        h1 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 20px;
         }
         table {
             width: 100%;
             border-collapse: collapse;
         }
-        th, td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
         th {
-            background-color: #f2f2f2;
-            font-weight: bold;
+            background-color: #3498db;
+            color: white;
+            padding: 10px;
         }
-        tr:hover {
-            background-color: #f5f5f5;
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
         }
         .view-class-button {
-            background-color: #007bff;
-            color: #fff;
+            background-color: #000080;
+            color: white;
             border: none;
             padding: 8px 16px;
             border-radius: 5px;
@@ -51,32 +40,48 @@
             transition: background-color 0.3s ease;
         }
         .view-class-button:hover {
-            background-color: #0056b3;
+            background-color: #0000cc;
+        }
+        .logout-button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background-color: #ff0000;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+        }
+        .logout-button:hover {
+            background-color: #cc0000;
         }
     </style>
 </head>
 <body>
+    <a href="{% url 'logout' %}" class="logout-button">Logout</a>
     <div class="container">
         <h1>Welcome, {{ request.user.username }}</h1>
         <h2>Your Classes</h2>
         <table>
-            <thead>
+            <tr>
+                <th>Course Name</th>
+                <th>Course ID</th>
+                <th>Semester</th>
+                <th>School Year</th>
+                <th>Action</th>
+            </tr>
+            {% for class in classes %}
                 <tr>
-                    <th>Course Name</th>
-                    <th>Course ID</th>
-                    <th>Action</th>
+                    <td>{{ class.course.course_name }}</td>
+                    <td>{{ class.course.course_id }}</td>
+                    <td>{{ class.semester }}</td>
+                    <td>{{ class.school_year }}</td>
+                    <td><a href="{% url 'view_class' class.id %}" class="view-class-button">View Class</a></td>
                 </tr>
-            </thead>
-            <tbody>
-                {% for enrollment in classes_taught %}
-                <tr>
-                    <td>{{ enrollment.course_id.course_name }}</td>
-                    <td>{{ enrollment.course_id.course_id }}</td>
-                    <td><a href="{% url 'view_class' enrollment.course_id.course_id %}" class="view-class-button">View Class</a></td>
-                    <a href="{% url 'view_class' course_id=enrollment.course.course_id %}">View Class</a>
-                </tr>
-                {% endfor %}
-            </tbody>
+            {% endfor %}
         </table>
     </div>
 </body>

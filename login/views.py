@@ -4,8 +4,8 @@ from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.urls import NoReverseMatch
 from django.contrib import messages
-from .models import Instructor, Course, Student, Grade, Enrollment, User
-from .forms import RegistrationForm, InstructorForm
+from .models import Instructor, Course, Student, Enrollment, User, SchoolYear, Semester, Class
+from .forms import RegistrationForm, InstructorForm, GradeForm
 
 def login_form(request):
     if request.method == 'POST':
@@ -162,10 +162,23 @@ def edit_course(request, course_id):
         }
         return render(request, 'login_page/edit_course.html', context)
 
-def view_class(request, course_id):
-    enrollments = Enrollment.objects.filter(course_id=course_id)
+def view_class(request, class_id):
+    class_ = Class.objects.get(id=class_id)
+    enrollments = Enrollment.objects.filter(enrolled_class=class_)
+    print(enrollments)  # Add this line
 
-    return render(request, 'login_page/view_class.html', {'enrollments': enrollments})
+    return render(request, 'login_page/view_class.html', {'class': class_, 'enrollments': enrollments})
+
+def edit_grade(request, enrollment_id):
+    enrollment = get_object_or_404(Enrollment, enrollment_id=enrollment_id)
+    if request.method == 'POST':
+        form = GradeForm(request.POST, instance=enrollment)
+        if form.is_valid():
+            form.save()
+            return redirect('view_class', class_id=enrollment.enrolled_class.id)
+    else:
+        form = GradeForm(instance=enrollment)
+    return render(request, 'login_page/edit_grade.html', {'form': form, 'enrollment': enrollment})
 
 def delete_course(request, course_id):
     course = get_object_or_404(Course, course_id=course_id)
@@ -174,10 +187,9 @@ def delete_course(request, course_id):
 
 def instructor_dashboard(request):
     instructor = request.user.instructor
+    classes = Class.objects.filter(instructor=instructor)
 
-    classes_taught = Enrollment.objects.filter(instructor=instructor)
-
-    return render(request, 'login_page/instructor_dashboard.html', {'classes_taught': classes_taught})
+    return render(request, 'login_page/instructor_dashboard.html', {'classes': classes})
 
 def student_dashboard(request):
     # Assuming you have a logged-in user object available in the request
